@@ -36,7 +36,11 @@ class PlaylistSearchHandler(BaseHandler):
             playlistName = data['playlistName']
             userName = data['userName']
             description = data['description']
-            self.application.db.addPlaylist(playlistName, userName, description)
+            if self.application.db.isLoggedin(userName):
+                self.application.db.addPlaylist(playlistName, userName, description)
+            else:
+                statusCode = 403
+                statusMessage = 'User invalid or not logged in'
         except Exception as e:
             #raise e
             statusCode = 400

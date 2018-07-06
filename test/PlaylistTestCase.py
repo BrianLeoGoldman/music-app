@@ -2,6 +2,7 @@ import json
 import unittest
 import requests
 import json
+from src.TestService import *
 from collections import namedtuple
 
 
@@ -16,13 +17,13 @@ class PlaylistTestCase(unittest.TestCase):
         requests.put('http://localhost:8080/apiv1/users', json=jsonData)
         """
         pass
+    
+    def getFilePath(self,fileName):
+        return 'rsc/'+fileName if ENV == 'dev' else 'test/rsc/'+fileName
 
-    def test_add_Playlist_RockClassics_to_user_Max01(self):
-        jsonData = {'name': 'Max',
-                    'lastName': 'Powell',
-                    'userName': 'Max01',
-                    'password': 'Password1234'}
-        requests.put('http://localhost:8080/apiv1/users', json=jsonData)
+    def test_add_Playlist_RockClassics_to_user_logged_Max01(self):
+        createMaxPowell()
+        logMaxPowell()
 
         playlistJsonData = {'playlistName': 'RockClassics',
                          'userName': 'Max01',
@@ -32,6 +33,7 @@ class PlaylistTestCase(unittest.TestCase):
         self.assertEqual(addPlaylistReq.status_code, 200)
         self.assertEqual(addPlaylistReq.reason, 'OK')
         self.assertEqual(addPlaylistReq.text, 'Playlist added')
+        logoutMaxPowell()
 
 
     def test_get_Nonexistent_Playlist(self):
@@ -45,12 +47,9 @@ class PlaylistTestCase(unittest.TestCase):
         requests.delete('http://localhost:8080/apiv1/users/Max01')
 
 
-    def test_get_Playlists_With_Name_Like_Rock(self):
-        jsonData = {'name': 'Max',
-                    'lastName': 'Powell',
-                    'userName': 'Max01',
-                    'password': 'Password1234'}
-        requests.put('http://localhost:8080/apiv1/users', json=jsonData)
+    def test_get_Playlists_With_Name_Like_Rock_While_Logged_In(self):
+        createMaxPowell()
+        logMaxPowell()
 
         firstPlaylistJsonData = {'playlistName': 'classicrock',
                             'userName': 'Max01',
@@ -68,10 +67,11 @@ class PlaylistTestCase(unittest.TestCase):
         self.assertEqual(getPlaylistReq.reason, 'OK')
         jsonResponse = json.loads(getPlaylistReq.text)
         self.assertEqual(len(jsonResponse), 2)
+        logoutMaxPowell()
         requests.delete('http://localhost:8080/apiv1/users/Max01')
         requests.delete('http://localhost:8080/apiv1/playlists/classicrock')
         requests.delete('http://localhost:8080/apiv1/playlists/oldrocksongs')
-
+       
     @unittest.SkipTest
     def test_update_Playlist_RockClassics_Data(self):
 
@@ -95,18 +95,19 @@ class PlaylistTestCase(unittest.TestCase):
         requests.delete('http://localhost:8080/apiv1/playlists/RockClassics')
 
     @unittest.SkipTest
-    def test_add_track_Song1_to_playlist_RockClassics(self):
+    def test_add_track_Song1_to_playlist_RockClassics_While_Logged_In(self):
+        #Create temporal user
         secondUserJsonData = {'name': 'Tom',
                             'lastName': 'Johnson',
                             'userName': 'Tom99',
                             'password': 'Password4567'}
         requests.put('http://localhost:8080/apiv1/users', json=secondUserJsonData)
+        #Log temporal user
+        jsonData = {'password': 'Password4567'}
+        requests.post('http://localhost:8080/apiv1/login/Tom99', json=jsonData)
 
-        jsonData = {'name': 'Max',
-                    'lastName': 'Powell',
-                    'userName': 'Max01',
-                    'password': 'Password1234'}
-        requests.put('http://localhost:8080/apiv1/users', json=jsonData)
+        createMaxPowell()
+        logMaxPowell()
 
         playlistJsonData = {'playlistName': 'RockClassics',
                             'userName': 'Max01',
@@ -124,20 +125,25 @@ class PlaylistTestCase(unittest.TestCase):
         requests.delete('http://localhost:8080/apiv1/users/Max01')
         requests.delete('http://localhost:8080/apiv1/users/Tom99')
         requests.delete('http://localhost:8080/apiv1/playlists/RockClassics')
+        #Logout temporal user
+        jsonData = {'userName': 'Tom99'}
+        requests.post('http://localhost:8080/apiv1/logout', json=jsonData)
+        logoutMaxPowell()
 
     @unittest.SkipTest
-    def test_delete_track_Song1_from_playlist_RockClassics(self):
+    def test_delete_track_Song1_from_playlist_RockClassics_While_Logged_In(self):
+        #Create temporal user
         secondUserJsonData = {'name': 'Tom',
                             'lastName': 'Johnson',
                             'userName': 'Tom99',
                             'password': 'Password4567'}
         requests.put('http://localhost:8080/apiv1/users', json=secondUserJsonData)
+        #Log temporal user
+        jsonData = {'password': 'Password4567'}
+        requests.post('http://localhost:8080/apiv1/login/Tom99', json=jsonData)
 
-        jsonData = {'name': 'Max',
-                    'lastName': 'Powell',
-                    'userName': 'Max01',
-                    'password': 'Password1234'}
-        requests.put('http://localhost:8080/apiv1/users', json=jsonData)
+        createMaxPowell()
+        logMaxPowell()
 
         playlistJsonData = {'playlistName': 'RockClassics',
                             'userName': 'Max01',
@@ -156,21 +162,25 @@ class PlaylistTestCase(unittest.TestCase):
         self.assertEqual(deleteTrackReq.status_code, 200)
         self.assertEqual(deleteTrackReq.reason, 'OK')
         self.assertEqual(deleteTrackReq.text, 'Tracks deleted from playlist')
-        requests.delete('http://localhost:8080/apiv1/users/Max01')
-        requests.delete('http://localhost:8080/apiv1/users/Tom99')
+        #Logout temporal user
+        jsonData = {'userName': 'Tom99'}
+        requests.post('http://localhost:8080/apiv1/logout', json=jsonData)
+        logoutMaxPowell()
 
 
-    def test_Get_All_Available_Playlists(self):
-        jsonData = {'name': 'Max',
-                    'lastName': 'Powell',
-                    'userName': 'Max01',
-                    'password': 'Password1234'}
-        requests.put('http://localhost:8080/apiv1/users', json=jsonData)
+    def test_Get_All_Available_Playlists_While_Logged_In(self):
+        createMaxPowell()
+        logMaxPowell()
+        
+        #Create temporal user
         secondUserJsonData = {'name': 'Tom',
-                              'lastName': 'Johnson',
-                              'userName': 'Tom99',
-                              'password': 'Password4567'}
+                            'lastName': 'Johnson',
+                            'userName': 'Tom99',
+                            'password': 'Password4567'}
         requests.put('http://localhost:8080/apiv1/users', json=secondUserJsonData)
+        #Log temporal user
+        jsonData = {'password': 'Password4567'}
+        requests.post('http://localhost:8080/apiv1/login/Tom99', json=jsonData)
 
         firstPlaylistJsonData = {'playlistName': 'classicrock',
                             'userName': 'Max01',
@@ -187,6 +197,12 @@ class PlaylistTestCase(unittest.TestCase):
         self.assertEqual(getAllPlaylistsReq.reason, 'OK')
         jsonResponse = json.loads(getAllPlaylistsReq.text)
         self.assertEqual(len(jsonResponse),2)
+        
+        #Logout temporal user
+        jsonData = {'userName': 'Tom99'}
+        requests.post('http://localhost:8080/apiv1/logout', json=jsonData)
+        logoutMaxPowell()
+        
         requests.delete('http://localhost:8080/apiv1/users/Max01')
         requests.delete('http://localhost:8080/apiv1/playlists/classicrock')
         requests.delete('http://localhost:8080/apiv1/playlists/oldrocksongs')
