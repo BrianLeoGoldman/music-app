@@ -10,7 +10,10 @@ def createAlbumXToJose():
 def logoutJosePerez():
     jsonData = {'userName': 'JoseYYY'}
     requests.post('http://localhost:8080/apiv1/logout', json=jsonData)
-
+    
+def logoutMaxPowell():
+    jsonData = {'userName': 'Max01'}
+    requests.post('http://localhost:8080/apiv1/logout', json=jsonData)
 
 def logJosePerez():
     jsonData = {'password': 'Clave1234._5'}
@@ -19,7 +22,6 @@ def logJosePerez():
 def logMaxPowell():
     jsonData = {'password': 'Password1234'}
     requests.post('http://localhost:8080/apiv1/login/Max01', json=jsonData)
-
 
 def createJosePerez():
     jsonData = {'name': 'Jose',
