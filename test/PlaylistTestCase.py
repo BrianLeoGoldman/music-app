@@ -2,6 +2,7 @@ import json
 import unittest
 import requests
 import json
+from src.TestService import *
 from collections import namedtuple
 
 
