@@ -10,8 +10,10 @@ class UserLoginHandler(BaseHandler):
         statusCode = 200
         statusMessage = 'User Password Updated'
         try:
-            password = json.loads(self.request.body.decode('utf-8'))
-            self.application.db.updateUserCredentials(userName, password)
+            data = json.loads(self.request.body.decode('utf-8'))
+            if not 'password' in data.keys():
+                raise ("Bad request")
+            self.application.db.updateUserCredentials(userName, data)
         except Exception as e:
             #raise e
             statusCode = 400
